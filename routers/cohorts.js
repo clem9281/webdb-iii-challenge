@@ -29,4 +29,22 @@ router
     }
   });
 
+router.route("/:id").get(async (req, res) => {
+  try {
+    const cohort = await db("cohorts")
+      .where({ id: req.params.id })
+      .first();
+    if (!cohort) {
+      return res
+        .status(404)
+        .json({ error: "Sorry, we couldn't find a cohort at that id" });
+    }
+    res.status(200).json(cohort);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Sorry, we couldn't find that cohort at this time" });
+  }
+});
+
 module.exports = router;
