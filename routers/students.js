@@ -2,6 +2,7 @@ const express = require("express");
 const knex = require("knex");
 const knexConfig = require("../knexfile");
 const router = express.Router();
+const checkForNameAndCohortId = require("../customMiddleware/students");
 const db = knex(knexConfig.development);
 
 router
@@ -16,25 +17,8 @@ router
         .json({ error: "Sorry, we couldn't get the students at this time" });
     }
   })
-  .post(async (req, res) => {
-    const { name, cohort_id } = req.body;
-    if (!name) {
-      return res.status(400).json({
-        error: "The student name is required"
-      });
-    }
+  .post(checkForNameAndCohortId, async (req, res) => {
     try {
-      //  for fun: check and make sure you are only adding a student to an existing cohort
-      if (cohort_id) {
-        const cohort = await db("cohorts")
-          .where({ id: cohort_id })
-          .first();
-        if (!cohort) {
-          return res
-            .status(400)
-            .json({ error: "The supplied cohort id must exist" });
-        }
-      }
       const newStudentId = await db("students").insert(req.body);
       const newStudent = await db("students")
         .where({ id: newStudentId[0] })
@@ -80,25 +64,8 @@ router
       res.status(200).json(students);
     } catch (error) {}
   })
-  .put(async (req, res) => {
-    const { name, cohort_id } = req.body;
-    if (!name) {
-      return res.status(400).json({
-        error: "The student name is required"
-      });
-    }
+  .put(checkForNameAndCohortId, async (req, res) => {
     try {
-      //  for fun: check and make sure you are only adding a student to an existing cohort
-      if (cohort_id) {
-        const cohort = await db("cohorts")
-          .where({ id: cohort_id })
-          .first();
-        if (!cohort) {
-          return res
-            .status(400)
-            .json({ error: "The supplied cohort id must exist" });
-        }
-      }
       const updated = await db("students")
         .where({ id: req.params.id })
         .update(req.body);
