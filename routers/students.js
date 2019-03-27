@@ -79,5 +79,42 @@ router
       const students = await db("students");
       res.status(200).json(students);
     } catch (error) {}
+  })
+  .put(async (req, res) => {
+    const { name, cohort_id } = req.body;
+    if (!name) {
+      return res.status(400).json({
+        error: "The student name is required"
+      });
+    }
+    try {
+      //  for fun: check and make sure you are only adding a student to an existing cohort
+      if (cohort_id) {
+        const cohort = await db("cohorts")
+          .where({ id: cohort_id })
+          .first();
+        if (!cohort) {
+          return res
+            .status(400)
+            .json({ error: "The supplied cohort id must exist" });
+        }
+      }
+      const updated = await db("students")
+        .where({ id: req.params.id })
+        .update(req.body);
+      if (updated === 0) {
+        return res
+          .status(404)
+          .json({ error: "There is no student entry at that id" });
+      }
+      const updatedStudent = await db("students")
+        .where({ id: req.params.id })
+        .first();
+      res.status(200).json(updatedStudent);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Sorry, we could not update a post at this time" });
+    }
   });
 module.exports = router;
