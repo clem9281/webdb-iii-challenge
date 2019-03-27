@@ -65,6 +65,29 @@ router
         error: "Sorry, we could not delete that cohort entry at this time"
       });
     }
+  })
+  .put(async (req, res) => {
+    if (!req.body.name) {
+      return res.status(400).json({ error: "The name field is required" });
+    }
+    try {
+      const updated = await db("cohorts")
+        .where({ id: req.params.id })
+        .update(req.body);
+      if (updated === 0) {
+        return res
+          .status(404)
+          .json({ error: "There is no cohort entry at that id" });
+      }
+      const updatedCohort = await db("cohorts")
+        .where({ id: req.params.id })
+        .first();
+      res.status(200).json(updatedCohort);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Sorry, we could not edit that cohort at this time" });
+    }
   });
 
 module.exports = router;
