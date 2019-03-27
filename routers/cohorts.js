@@ -90,4 +90,19 @@ router
     }
   });
 
+router.route("/:id/students").get(async (req, res) => {
+  try {
+    const students = await db("students").where({ cohort_id: req.params.id });
+    if (students.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "There are no students in that cohort" });
+    }
+    res.status(200).json(students);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Sorry, we couldn't find the students at this time" });
+  }
+});
 module.exports = router;
