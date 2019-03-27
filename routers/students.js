@@ -47,4 +47,21 @@ router
     }
   });
 
+router.route("/:id").get(async (req, res) => {
+  try {
+    const student = await db("students")
+      .where({ id: req.params.id })
+      .first();
+    if (!student) {
+      return res
+        .status(404)
+        .json({ error: "There is not student entry at that id" });
+    }
+    res.status(200).json(student);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "We couldn't get that student entry at this time" });
+  }
+});
 module.exports = router;
